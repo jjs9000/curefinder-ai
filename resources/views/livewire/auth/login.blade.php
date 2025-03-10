@@ -74,6 +74,17 @@ new #[Layout('components.layouts.auth')] class extends Component {
 }; ?>
 
 <div class="flex flex-col gap-6">
+    <h1 x-data="{ time: '' }"
+        x-init="setInterval(() => {
+            let now = new Date();
+            let options = { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
+            time = now.toLocaleString('en-GB', options).replace(',', ' |');
+        }, 1000)"
+        class="flex items-center justify-center">
+        <span x-text="time"></span>
+    </h1>
+
+
     <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
 
     <!-- Session Status -->
