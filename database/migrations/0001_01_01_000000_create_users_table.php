@@ -19,7 +19,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->tinyInteger('age')->nullable();
-            $table->enum('gender', ["male","female"]);
+            $table->enum('gender', ["male","female"])->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
