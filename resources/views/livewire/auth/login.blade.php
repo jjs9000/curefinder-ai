@@ -134,4 +134,10 @@ new #[Layout('components.layouts.auth')] class extends Component {
             <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
         </div>
     @endif
+
+    <div class="flex items-center justify-center mt-4">
+        <a href="{{ route('auth.github') }}" class="ml-4 btn btn-dark flex flex-row items-center justify-center border border-2 rounded-xl p-3 hover:border-zinc-600 transition-colors">
+            <span><img src="{{ Vite::asset('resources/svg/github-mark-white.svg') }}" alt="GitHub" class="w-4 h-4 mr-2"></span> Login with GitHub
+        </a>
+    </div>
 </div>
