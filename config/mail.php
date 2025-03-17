@@ -109,7 +109,7 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'farris.job@gmail.com'),
+        'address' => env('MAIL_FROM_ADDRESS', 'mailtrap@curefinderai.com'),
         'name' => env('MAIL_FROM_NAME', 'CureFinder AI'),
     ],
 
