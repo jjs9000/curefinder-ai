@@ -14,6 +14,7 @@ class ChatBubble extends Component
     public $userInput = '';
     public $errorMessage = '';
     public $isTyping = false;
+    public $isLoading = false;
 
     public function mount()
     {
@@ -26,12 +27,17 @@ class ChatBubble extends Component
 
     public function sendMessage()
     {
+        // Set loading state to true
+        $this->isLoading = true;
+        $this->dispatch('update-loading-status', true);
+
         $this->errorMessage = '';
 
         if (empty($this->userInput)) {
             $this->errorMessage = '⚠️ Message cannot be empty!';
             return;
         }
+
 
         // Store user input with explicit keys
         $userMessage = [
@@ -54,10 +60,19 @@ class ChatBubble extends Component
         $this->isTyping = true;
         $this->dispatch('update-typing-status', true);
 
+        // Process AI response asynchronously
+        $this->processAIResponse($this->userInput);
+
+        // Clear user input immediately
+        $this->userInput = '';
+    }
+
+    public function processAIResponse($input)
+    {
         try {
             $response = Prism::text()
                 ->using(Provider::Gemini, 'gemini-1.5-flash-8b')
-                ->withPrompt($this->userInput)
+                ->withPrompt($input)
                 ->asText();
 
             // Ensure AI response exists and has all required keys
@@ -86,9 +101,11 @@ class ChatBubble extends Component
             $this->dispatch('console-log', sender: 'Error', text: $this->errorMessage);
             $this->isTyping = false;
             $this->dispatch('update-typing-status', false);
-        }
 
-        $this->userInput = '';
+            // // Reset loading state after error
+            // $this->isLoading = false;
+            // $this->dispatch('update-loading-status', false);
+        }
     }
 
     // Add this method to handle the delayed message display
@@ -99,6 +116,9 @@ class ChatBubble extends Component
 
         // Turn off the typing indicator
         $this->isTyping = false;
+
+        // Reset loading state after successful processing
+        $this->isLoading = false;
     }
 
 

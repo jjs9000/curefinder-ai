@@ -8,6 +8,11 @@
         <span class="dot-flashing"></span>
     </div>
 
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="hidden flex items-center justify-center">
+        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6"></div>
+    </div>
+
     <!-- Chat and Input Container (Fixed Layout) -->
     <div class="flex flex-col flex-grow overflow-hidden h-96">
         
@@ -58,11 +63,16 @@
             <input type="text" wire:model="userInput" wire:keydown.enter="sendMessage"
                    class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2
                    focus:ring-gray-800 dark:bg-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                   placeholder="Type your message...">
+                   placeholder="Type your message..." {{ $isLoading ? 'disabled' : '' }}>
 
-            <button wire:click="sendMessage"
-                    class="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white font-semibold rounded-md transition">
-                Send
+            <button wire:click="sendMessage" {{ $isLoading ? 'disabled' : '' }}
+                    class="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white font-semibold rounded-md transition relative">
+                <span class="{{ $isLoading ? 'hidden' : '' }}">Send</span>
+                @if($isLoading)
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6"></div>
+                    </div>
+                @endif
             </button>
         </div>
 
@@ -79,22 +89,30 @@
                 }
             });
 
+            window.Livewire.on('update-loading-status', (status) => {
+                console.log("Loading status:", status); // Debugging line
+                let loadingIndicator = document.getElementById('loading-indicator');
+                if (loadingIndicator) {
+                    loadingIndicator.classList.toggle('hidden', !status);
+                }
+            });
+
             window.Livewire.on('delayed-response', ({ aiMessage }) => {
-                // Log the complete AI message object
                 console.log("AI Response Object:", aiMessage);
-                
-                // Add delay before showing the message
                 setTimeout(() => {
-                    // Call the Livewire component method to add the message
                     if (window.Livewire.first()) {
                         window.Livewire.first().addMessage(aiMessage);
-                        scrollToBottom();
+                        // Delay scrolling to ensure the message is fully rendered
+                        setTimeout(scrollToBottom, 100); // Adjust the delay as needed
                     } else {
                         console.error("Livewire component not found");
                     }
-                }, 2000); // 2 second delay
+                }, 2000);
             });
         }
+
+        // Ensure the chat box scrolls to the bottom on page load
+        window.addEventListener('load', scrollToBottom);
     });
 
     document.addEventListener("livewire:initialized", function () {
