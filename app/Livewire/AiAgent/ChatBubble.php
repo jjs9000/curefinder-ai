@@ -2,10 +2,11 @@
 
 namespace App\Livewire\AiAgent;
 
-use Livewire\Attributes\On;
 use Livewire\Component;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Prism;
+use App\Models\ChatMessage;
+use Illuminate\Support\Facades\Auth;
 
 class ChatBubble extends Component
 {
@@ -13,6 +14,15 @@ class ChatBubble extends Component
     public $userInput = '';
     public $errorMessage = '';
     public $isTyping = false;
+
+    public function mount()
+    {
+        // Load existing messages for the authenticated user
+        $this->messages = ChatMessage::where('user_id', Auth::id())
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->toArray();
+    }
 
     public function sendMessage()
     {
@@ -29,6 +39,13 @@ class ChatBubble extends Component
             'text' => $this->userInput
         ];
         $this->messages[] = $userMessage;
+
+        // Save the message to the database
+        ChatMessage::create([
+            'user_id' => Auth::id(),
+            'sender' => 'user',
+            'text' => $this->userInput
+        ]);
 
         // Log user message
         $this->dispatch('console-log', sender: 'User', text: $this->userInput);
@@ -57,6 +74,13 @@ class ChatBubble extends Component
 
             // Store the AI message for delayed display
             $this->dispatch('delayed-response', aiMessage: $aiMessage);
+
+            // Store the AI message in the database after dispatching the delayed response
+            ChatMessage::create([
+                'user_id' => Auth::id(),
+                'sender' => 'ai',
+                'text' => $aiMessage['text']
+            ]);
         } catch (\Exception $e) {
             $this->errorMessage = '❌ AI Error: ' . $e->getMessage();
             $this->dispatch('console-log', sender: 'Error', text: $this->errorMessage);
