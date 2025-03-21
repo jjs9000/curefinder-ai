@@ -3,9 +3,11 @@
 namespace App\Livewire\AiAgent;
 
 use Livewire\Component;
+use Livewire\Attributes\Computed;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Prism;
 use App\Models\ChatMessage;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class ChatBubble extends Component
@@ -16,10 +18,16 @@ class ChatBubble extends Component
     public $isTyping = false;
     public $isLoading = false;
 
+    #[Computed(persist: true, seconds: 7200)]
+    public function user()
+    {
+        return User::find(Auth::id());
+    }
+
     public function mount()
     {
         // Load existing messages for the authenticated user
-        $this->messages = ChatMessage::where('user_id', Auth::id())
+        $this->messages = ChatMessage::where('user_id', $this->user()->id)
             ->orderBy('created_at', 'asc')
             ->get()
             ->toArray();
@@ -27,6 +35,10 @@ class ChatBubble extends Component
 
     public function sendMessage()
     {
+        $this->validate([
+            'userInput' => 'required|string|max:255',
+        ]);
+
         // Set loading state to true
         $this->isLoading = true;
         $this->dispatch('update-loading-status', true);
@@ -38,17 +50,16 @@ class ChatBubble extends Component
             return;
         }
 
-
         // Store user input with explicit keys
         $userMessage = [
             'sender' => 'user',
-            'text' => $this->userInput
+            'text' => e($this->userInput)
         ];
         $this->messages[] = $userMessage;
 
         // Save the message to the database
         ChatMessage::create([
-            'user_id' => Auth::id(),
+            'user_id' => $this->user()->id,
             'sender' => 'user',
             'text' => $this->userInput
         ]);
@@ -92,7 +103,7 @@ class ChatBubble extends Component
 
             // Store the AI message in the database after dispatching the delayed response
             ChatMessage::create([
-                'user_id' => Auth::id(),
+                'user_id' => $this->user()->id,
                 'sender' => 'ai',
                 'text' => $aiMessage['text']
             ]);
@@ -101,10 +112,6 @@ class ChatBubble extends Component
             $this->dispatch('console-log', sender: 'Error', text: $this->errorMessage);
             $this->isTyping = false;
             $this->dispatch('update-typing-status', false);
-
-            // // Reset loading state after error
-            // $this->isLoading = false;
-            // $this->dispatch('update-loading-status', false);
         }
     }
 
@@ -120,7 +127,6 @@ class ChatBubble extends Component
         // Reset loading state after successful processing
         $this->isLoading = false;
     }
-
 
     public function render()
     {
