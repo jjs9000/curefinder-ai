@@ -13,18 +13,28 @@
         
         <!-- Chat Container -->
         <div id="chat-box" class="flex-grow overflow-y-auto border-b border-gray-300 dark:border-gray-700 mb-4 p-2 space-y-2 relative bg-white bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] dark:bg-gray-900 dark:bg-[radial-gradient(#374151_1px,transparent_1px)]">
-            @foreach($messages as $message)
-                <div class="flex @if($message['sender'] === 'user') justify-end @else justify-start @endif">
-                    <div class="px-6 py-3 rounded-xl max-w-md text-base leading-relaxed shadow-md opacity-0 animate-fade-in
-                        @if($message['sender'] === 'user')
-                            bg-gray-800 text-white rounded-br-none
-                        @else
-                            bg-gray-300 text-black dark:bg-gray-700 dark:text-white rounded-bl-none
-                        @endif">
-                        {!! nl2br(e($message['text'])) !!}
+            @if(empty($messages))
+                <!-- Placeholder for new users -->
+                <div class="flex justify-center items-center h-full">
+                    <div class="text-center text-gray-500 dark:text-gray-400 animate-pulse">
+                        <p class="text-lg">Start chatting with Gemini</p>
+                        <p class="text-sm">Your AI assistant is ready to help!</p>
                     </div>
                 </div>
-            @endforeach
+            @else
+                @foreach($messages as $message)
+                    <div class="flex @if($message['sender'] === 'user') justify-end @else justify-start @endif">
+                        <div class="px-6 py-3 rounded-xl max-w-md text-base leading-relaxed shadow-md opacity-0 animate-fade-in
+                            @if($message['sender'] === 'user')
+                                bg-gray-800 text-white rounded-br-none
+                            @else
+                                bg-gray-300 text-black dark:bg-gray-700 dark:text-white rounded-bl-none
+                            @endif">
+                            {!! nl2br(e($message['text'])) !!}
+                        </div>
+                    </div>
+                @endforeach
+            @endif
 
             <!-- Typing Animation for AI -->
             @if($isTyping)
