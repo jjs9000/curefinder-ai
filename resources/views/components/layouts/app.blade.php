@@ -34,16 +34,6 @@
             50% { opacity: 1; }
             100% { opacity: 0.2; }
         }
-
-        .loader {
-            border-top-color: #3498db;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
     
     <flux:main>
